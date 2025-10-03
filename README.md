@@ -5,7 +5,7 @@
 - If someone learns the key used to generate future secrets (the KDF key), they still won't be able to predict those future secrets as long as enough new, random information (entropy) has been added to the process.
 
 ## Key Derivation Function (KDF) Chains
-Double Ratchet uses a key derivation function like HKDF[HMAC Key Derivation Function ]
+Double Ratchet uses a key derivation function like HKDF[HMAC + Key Derivation Function ]
 
 -  KDF is a cryptographic function that takes a secret and random KDF key and some input data and returns output data.
 -  In a Double Ratchet session each party stores a KDF key for three chains: a root chain, a sending chain, and a receiving chain 
@@ -23,3 +23,23 @@ Double Ratchet uses a key derivation function like HKDF[HMAC Key Derivation Func
 - Each message includes the sender’s current ratchet public key.
 - Key Update: When a new ratchet public key is received, a DH ratchet step replaces the local ratchet keys with new ones.
 - The parties alternate replacing their key pairs. If an attacker compromises a key, it is eventually replaced, and the new DH calculation becomes unknown to the attacker.
+
+## Double Ratchet
+- Combining the symmetric-key and DH ratchets gives the Double Ratchet:
+
+1. When a message is sent or received, a symmetric-key ratchet step is applied to the sending or receiving chain to derive the message key.
+2. When a new ratchet public key is received, a DH ratchet step is performed prior to the symmetric-key ratchet to replace the chain keys.
+
+### Keys in double ratchet
+1. **session key**:
+    - initial shared secret establishing during X3DH handshake
+    - it seeds the root key, which is then used further and evolves.
+2. **chain key**:
+   - one or more chains (one for sending and one for receiving)
+   - this key evolves every time message is sent/received
+   - message key is derived from each chain key
+3. **message key**:
+   - it is generated for every single message
+   - used to encrypt/decrypt judt one message
+   - deleted after use (forward secrecy)
+      
